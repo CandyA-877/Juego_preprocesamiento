@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío: Preprocesamiento con Pandas</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #38bdf8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #334155;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
+        .stage {
+            display: none;
+        }
+
+        .stage.active {
+            display: block;
+        }
+
+        .code-snippet {
+            background: #090d16;
+            color: #7dd3fc;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-left: 4px solid var(--accent);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button.btn-option {
+            background: #334155;
+            color: var(--text);
+            border: 2px solid transparent;
+            padding: 14px 20px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+        }
+
+        button.btn-option:hover {
+            border-color: var(--accent);
+            background: #475569;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-next {
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .score-board {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 3em;
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <!-- ESCENARIO 1 -->
+    <div class="stage active" id="stage-0">
+        <h2>Fase 1: Limpieza de Texto y Deduplicación</h2>
+        <p>Observa el código de normalización de cadenas de texto y eliminación de duplicados:</p>
+        <div class="code-snippet">
+df['nombre_comparacion'] = df['nombre'].apply(quitar_acentos).str.lower()<br>
+df = df.drop_duplicates(subset=['nombre_comparacion', 'edad', 'color_producto'])
+        </div>
+        <p><strong>Pregunta:</strong> ¿Por qué se utilizó una columna auxiliar con <code>quitar_acentos()</code> e <code>.str.lower()</code> antes de ejecutar <code>drop_duplicates</code>?</p>
+        
+        <div class="options">
+            <button class="btn-option" onclick="checkAnswer(0, 0, false)">Para borrar permanentemente la columna 'nombre' original por ser redundante.</button>
+            <button class="btn-option" onclick="checkAnswer(0, 1, true)">Para que 'Maria' y 'María' se consideren idénticas al comparar, manteniendo el texto original en la tabla final.</button>
+            <button class="btn-option" onclick="checkAnswer(0, 2, false)">Porque drop_duplicates no funciona con valores de tipo string en Pandas.</button>
+        </div>
+        <div class="feedback" id="fb-0"></div>
+        <button class="btn-next" id="next-0" onclick="nextStage(1)">Siguiente Fase</button>
+    </div>
+
+    <!-- ESCENARIO 2 -->
+    <div class="stage" id="stage-1">
+        <h2>Fase 2: Tratamiento de Valores Faltantes (Imputación)</h2>
+        <p>Analiza el tratamiento aplicado a la columna de ingresos:</p>
+        <div class="code-snippet">
+df['ingreso_mensual'] = df['ingreso_mensual'].fillna(df['ingreso_mensual'].median())
+        </div>
+        <p><strong>Pregunta:</strong> ¿Por qué se prefiere sustituir con la <strong>mediana</strong> (<code>.median()</code>) en lugar de la media o promedio para imputar datos numéricos faltantes?</p>
+        
+        <div class="options">
+            <button class="btn-option" onclick="checkAnswer(1, 0, false)">Porque la mediana convierte los datos faltantes en texto automáticamente.</button>
+            <button class="btn-option" onclick="checkAnswer(1, 1, false)">Porque la media requiere más espacio de memoria RAM para calcularse.</button>
+            <button class="btn-option" onclick="checkAnswer(1, 2, true)">Porque la mediana es robusta ante valores atípicos (outliers) e ingresos extremos.</button>
+        </div>
+        <div class="feedback" id="fb-1"></div>
+        <button class="btn-next" id="next-1" onclick="nextStage(2)">Siguiente Fase</button>
+    </div>
+
+    <!-- ESCENARIO 3 -->
+    <div class="stage" id="stage-2">
+        <h2>Fase 3: Filtrado de Outliers (Reglas de Negocio)</h2>
+        <p>Analiza la siguiente instrucción de filtrado de observaciones:</p>
+        <div class="code-snippet">
+df = df[df['edad'] <= 120]
+        </div>
+        <p>Dada la fila original con <code>'edad': 250</code>, ¿qué ocurre mecánicamente dentro del DataFrame tras ejecutar esta sintaxis?</p>
+        
+        <div class="options">
+            <button class="btn-option" onclick="checkAnswer(2, 0, true)">Genera una máscara booleana (True/False) por fila y descarta las filas evaluadas como False (como 250).</button>
+            <button class="btn-option" onclick="checkAnswer(2, 1, false)">Reemplaza el valor 250 por el límite máximo permitido (120).</button>
+            <button class="btn-option" onclick="checkAnswer(2, 2, false)">Transforma automáticamente la edad 250 en NaN/None sin eliminar la fila.</button>
+        </div>
+        <div class="feedback" id="fb-2"></div>
+        <button class="btn-next" id="next-2" onclick="nextStage(3)">Siguiente Fase</button>
+    </div>
+
+    <!-- ESCENARIO 4 -->
+    <div class="stage" id="stage-3">
+        <h2>Fase 4: Escalamiento y Normalización</h2>
+        <p>Revisa la aplicación del objeto <code>MinMaxScaler</code>:</p>
+        <div class="code-snippet">
+scaler = MinMaxScaler()<br>
+df['ingreso_norm'] = scaler.fit_transform(df[['ingreso_mensual']])
+        </div>
+        <p>Si los ingresos filtrados en la tabla resultan ser: <code>[8000, 12000, 15000]</code> (mínimo=8000, máximo=15000), ¿cuál será el valor transformado exacto de <code>8000</code> en <code>ingreso_norm</code>?</p>
+        
+        <div class="options">
+            <button class="btn-option" onclick="checkAnswer(3, 0, false)">0.5</button>
+            <button class="btn-option" onclick="checkAnswer(3, 1, true)">0.0</button>
+            <button class="btn-option" onclick="checkAnswer(3, 2, false)">1.0</button>
+        </div>
+        <div class="feedback" id="fb-3"></div>
+        <button class="btn-next" id="next-3" onclick="nextStage(4)">Siguiente Fase</button>
+    </div>
+
+    <!-- ESCENARIO 5 -->
+    <div class="stage" id="stage-4">
+        <h2>Fase 5: Codificación de Variables Categorías</h2>
+        <p>Analiza el comportamiento de la codificación de datos cualitativos:</p>
+        <div class="code-snippet">
+df = pd.get_dummies(df, columns=['color_producto'], drop_first=True)<br>
+le = LabelEncoder()<br>
+df['nivel_estudios_cod'] = le.fit_transform(df['nivel_estudios'])
+        </div>
+        <p><strong>Pregunta:</strong> ¿Por qué se usa <code>LabelEncoder</code> para <code>nivel_estudios</code> pero <code>get_dummies</code> (One-Hot Encoding) para <code>color_producto</code>?</p>
+        
+        <div class="options">
+            <button class="btn-option" onclick="checkAnswer(4, 0, false)">Porque get_dummies solo funciona con nombres de colores y LabelEncoder con texto arbitrario.</button>
+            <button class="btn-option" onclick="checkAnswer(4, 1, true)">Porque nivel_estudios presenta un orden jerárquico implícito (básico < medio < superior), mientras que los colores no tienen orden.</button>
+            <button class="btn-option" onclick="checkAnswer(4, 2, false)">Porque LabelEncoder borra la columna original automáticamente y get_dummies no.</button>
+        </div>
+        <div class="feedback" id="fb-4"></div>
+        <button class="btn-next" id="next-4" onclick="nextStage(5)">Ver Resultados</button>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS -->
+    <div class="stage" id="stage-5">
+        <div class="score-board">
+            <h2>¡Evaluación Completada!</h2>
+            <p>Puntuación obtenida:</p>
+            <div class="score-number" id="final-score">0 / 5</div>
+            <p id="score-msg"></p>
+            <button class="btn-next" style="display:inline-block;" onclick="location.reload()">Reintentar Evaluación</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentStage = 0;
+    let score = 0;
+    const totalStages = 5;
+
+    function checkAnswer(stageIdx, optionIdx, isCorrect) {
+        const feedbackEl = document.getElementById(`fb-${stageIdx}`);
+        const nextBtn = document.getElementById(`next-${stageIdx}`);
+        const options = document.querySelectorAll(`#stage-${stageIdx} .btn-option`);
+
+        // Deshabilitar botones de la fase actual
+        options.forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            feedbackEl.innerText = "¡Correcto! Has comprendido la funcionalidad y justificación técnica del código.";
+            feedbackEl.className = "feedback correct";
+            score++;
+        } else {
+            feedbackEl.innerText = "Incorrecto. Revisa los comentarios explicativos del código fuente para reforzar la justificación del método.";
+            feedbackEl.className = "feedback incorrect";
+        }
+
+        feedbackEl.style.display = "block";
+        nextBtn.style.display = "inline-block";
+    }
+
+    function nextStage(nextIdx) {
+        document.getElementById(`stage-${currentStage}`).classList.remove('active');
+        currentStage = nextIdx;
+
+        // Actualizar barra de progreso
+        const progressPercent = (currentStage / totalStages) * 100;
+        document.getElementById('progress').style.width = `${progressPercent}%`;
+
+        if (currentStage < totalStages) {
+            document.getElementById(`stage-${currentStage}`).classList.add('active');
+        } else {
+            showFinalResults();
+        }
+    }
+
+    function showFinalResults() {
+        document.getElementById('stage-5').classList.add('active');
+        document.getElementById('final-score').innerText = `${score} / ${totalStages}`;
+        
+        const msg = document.getElementById('score-msg');
+        if (score === totalStages) {
+            msg.innerText = "¡Excelente! Dominas perfectamente los conceptos básicos de preprocesamiento de datos en Pandas y Scikit-Learn.";
+        } else if (score >= 3) {
+            msg.innerText = "Buen trabajo. Comprendes el flujo general, aunque convendría repasar algunos detalles específicos de la codificación y los tipos de datos.";
+        } else {
+            msg.innerText = "Te sugerimos revisar con detenimiento cada sección comentada del script original y volver a intentar la prueba.";
+        }
+    }
+</script>
+</body>
+</html>
